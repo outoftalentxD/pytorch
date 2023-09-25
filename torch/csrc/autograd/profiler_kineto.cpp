@@ -1,5 +1,4 @@
 #include <cstring>
-#include <iostream>
 #define TORCH_ASSERT_ONLY_METHOD_OPERATORS
 #include <torch/csrc/autograd/profiler_kineto.h>
 

@@ -372,13 +372,11 @@ void transferSingleMetaActivity(const std::string& name) {
   if (!libkineto::api().isProfilerInitialized()) {
     return;
   }
-  std::cout << "void transferSingleMetaActivity(const std::string& name)" << std::endl;
-  static std::atomic<size_t> corr_id = 1;
+  static std::atomic<size_t> corr_id = 0;
   auto act = std::make_unique<libkineto::GenericTraceActivity>();
   act->activityName = name;
   act->activityType = libkineto::ActivityType::GPU_USER_ANNOTATION;
   act->id = corr_id.fetch_add(1);
-  std::cout << "[act->id] " << act->id << std::endl;
   pushMetaCorrelationId(act->id);
   libkineto::api().activityProfiler().transferSingleMetaActivity(std::move(act));
 #else

@@ -147,7 +147,6 @@ TORCH_API void addMetadataJson(
 TORCH_API void profilerStep();
 
 TORCH_API void transferSingleMetaActivity(const std::string& name);
-
 TORCH_API void pushMetaCorrelationId(uint64_t id);
 TORCH_API void popMetaCorrelationId();
 

@@ -6,7 +6,6 @@
 #include <torch/csrc/jit/runtime/operator.h>
 #include <torch/library.h>
 
-
 namespace caffe2 {
 // Required for cpp_custom_type_hack to work
 // NOLINTNEXTLINE(bugprone-exception-escape)
