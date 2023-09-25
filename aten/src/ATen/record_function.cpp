@@ -8,6 +8,8 @@
 #include <cstdlib>
 #include <random>
 
+#include <iostream>
+
 namespace at {
 
 namespace {
@@ -536,6 +538,8 @@ RecordFunction::RecordFunction(StepCallbacks&& step_callbacks)
 }
 
 void RecordFunction::runStartCallbacks() {
+  std::cout << "[RecordFunction::runStartCallbacks] cerr" << std::endl;
+  std::cout << "[RecordFunction::runStartCallbacks] cout" << std::endl;
   for (const auto i : c10::irange(step_callbacks_.callbacks_.size())) {
     tryRunCallback</*is_start=*/true>(
         step_callbacks_.callbacks_[i], *this, ctx_[i]);
