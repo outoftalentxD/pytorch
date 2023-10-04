@@ -264,6 +264,9 @@ PyObject* THPAutograd_initExtension(PyObject* _unused, PyObject* unused) {
   m.def("_disable_profiler", disableProfiler);
   m.def("_prepare_profiler", prepareProfiler);
   m.def("_add_metadata_json", addMetadataJson); // Only if `USE_KINETO` is set
+  m.def("_transfer_single_meta_activity", transferSingleMetaActivity); // Only if `USE_KINETO` is set
+  m.def("_push_meta_correlation_id", pushMetaCorrelationId); // Only if `USE_KINETO` is set
+  m.def("_pop_meta_correlation_id", popMetaCorrelationId); // Only if `USE_KINETO` is set
   m.def("_kineto_step", profilerStep); // Only if `USE_KINETO` is set
   m.def("kineto_available", []() { return torch::profiler::kKinetoAvailable; });
 
