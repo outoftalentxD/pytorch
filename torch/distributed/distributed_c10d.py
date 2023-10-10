@@ -2870,40 +2870,46 @@ def all_gather_into_tensor(output_tensor, input_tensor, group=None, async_op=Fal
         The Gloo backend does not support this API.
 
     """
-    _check_single_tensor(input_tensor, "input_tensor")
-    _check_single_tensor(output_tensor, "output_tensor")
-    if _rank_not_in_group(group):
-        _warn_not_in_group("all_gather_into_tensor")
-        return
+    with torch.profiler.correlate(
+      {
+        'input_tensor.size': input_tensor.size(),
+        'output_tensor.size': output_tensor.size()
+      }
+    ):
+      _check_single_tensor(input_tensor, "input_tensor")
+      _check_single_tensor(output_tensor, "output_tensor")
+      if _rank_not_in_group(group):
+          _warn_not_in_group("all_gather_into_tensor")
+          return
 
-    output_tensor = (
-        output_tensor
-        if not output_tensor.is_complex()
-        else torch.view_as_real(output_tensor)
-    )
-    input_tensor = (
-        input_tensor
-        if not input_tensor.is_complex()
-        else torch.view_as_real(input_tensor)
-    )
+      output_tensor = (
+          output_tensor
+          if not output_tensor.is_complex()
+          else torch.view_as_real(output_tensor)
+      )
+      input_tensor = (
+          input_tensor
+          if not input_tensor.is_complex()
+          else torch.view_as_real(input_tensor)
+      )
 
-    group = group or _get_default_group()
+      group = group or _get_default_group()
 
-    if group in _world.pg_coalesce_state.keys():
-        # We are in coalescing context, do not issue single operation, just append a collective representation
-        coll = _CollOp(all_gather_into_tensor, input_tensor, output_tensor)
-        _world.pg_coalesce_state[group].append(coll)
-        if async_op:
-            return _IllegalWork()
-        else:
-            return None
+      if group in _world.pg_coalesce_state.keys():
+          # We are in coalescing context, do not issue single operation, just append a collective representation
+          coll = _CollOp(all_gather_into_tensor, input_tensor, output_tensor)
+          _world.pg_coalesce_state[group].append(coll)
+          if async_op:
+              return _IllegalWork()
+          else:
+              return None
 
-    work = group._allgather_base(output_tensor, input_tensor)
+      work = group._allgather_base(output_tensor, input_tensor)
 
-    if async_op:
-        return work
-    else:
-        work.wait()
+      if async_op:
+          return work
+      else:
+          work.wait()
 
 
 @_exception_logger
@@ -3354,34 +3360,40 @@ def reduce_scatter_tensor(output, input, op=ReduceOp.SUM, group=None, async_op=F
         The Gloo backend does not support this API.
 
     """
-    _check_single_tensor(output, "output")
-    _check_single_tensor(input, "input")
+    with torch.profiler.correlate(
+      {
+        "input_tensor.size": input.size(),
+        "output_tensor.size": output.size()
+      }
+    ):
+      _check_single_tensor(output, "output")
+      _check_single_tensor(input, "input")
 
-    if _rank_not_in_group(group):
-        _warn_not_in_group("reduce_scatter_tensor")
-        return
+      if _rank_not_in_group(group):
+          _warn_not_in_group("reduce_scatter_tensor")
+          return
 
-    opts = ReduceScatterOptions()
-    opts.reduceOp = op
+      opts = ReduceScatterOptions()
+      opts.reduceOp = op
 
-    group = group or _get_default_group()
+      group = group or _get_default_group()
 
-    # Check if we are in coalescing context
-    # If we are, do not issue single operation, just append a collective representation
-    if group in _world.pg_coalesce_state.keys():
-        coll = _CollOp(reduce_scatter_tensor, input, output, op, None)
-        _world.pg_coalesce_state[group].append(coll)
-        if async_op:
-            return _IllegalWork()
-        else:
-            return None
+      # Check if we are in coalescing context
+      # If we are, do not issue single operation, just append a collective representation
+      if group in _world.pg_coalesce_state.keys():
+          coll = _CollOp(reduce_scatter_tensor, input, output, op, None)
+          _world.pg_coalesce_state[group].append(coll)
+          if async_op:
+              return _IllegalWork()
+          else:
+              return None
 
-    work = group._reduce_scatter_base(output, input, opts)
+      work = group._reduce_scatter_base(output, input, opts)
 
-    if async_op:
-        return work
-    else:
-        work.wait()
+      if async_op:
+          return work
+      else:
+          work.wait()
 
 
 def _reduce_scatter_base(output, input, op=ReduceOp.SUM, group=None, async_op=False):
